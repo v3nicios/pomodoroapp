@@ -1,7 +1,7 @@
 import { Text, View } from "react-native"
 
 
-  export const Home = () => {
+  export const Settings = () => {
 
   return(
     <View>

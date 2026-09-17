@@ -9,10 +9,20 @@ export const Home = () => {
     const navigation = useNavigation<TNavigationScreenProps>();
 
     return (
-        <View style={styles.container} >
-            <TouchableOpacity>
-
+        <View style={styles.mainContainer} >
+                 <TouchableOpacity
+                 style={styles.settingButto}
+                 onPress={() => navigation.navigate('Settings')                     
+                 }
+                 >
+            <MaterialIcons
+            size={28}
+            name="settings"
+            color={Theme.colors.divider}
+            />
             </TouchableOpacity>
+        <View style={styles.container} >
+       
 
             <View style={styles.titlegroup} >
                 <View style={styles.titlecontainer}  >
@@ -92,6 +102,7 @@ export const Home = () => {
 
             </View>
         </View>
+        </View>
     )
 }
 
@@ -101,6 +112,12 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    mainContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 16
     },
     titlegroup: {
         gap: 24
@@ -180,6 +197,9 @@ const styles = StyleSheet.create({
         borderRadius: '100%',
         backgroundColor: Theme.colors.primary
 
+    },
+    settingButto:{
+        alignSelf: 'flex-end'
     }
 
 })

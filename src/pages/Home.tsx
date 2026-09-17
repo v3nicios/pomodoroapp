@@ -3,12 +3,16 @@ import { StyleSheet, Text, Touchable, TouchableOpacity, View } from "react-nativ
 import { TNavigationScreenProps } from "../AppRoutes";
 import { Theme } from '../shared/themes/Theme';
 import CircularProgress, { AnimatedCircularProgress } from 'react-native-circular-progress'
+import {MaterialIcons} from '@expo/vector-icons'
 
 export const Home = () => {
     const navigation = useNavigation<TNavigationScreenProps>();
 
     return (
         <View style={styles.container} >
+            <TouchableOpacity>
+
+            </TouchableOpacity>
 
             <View style={styles.titlegroup} >
                 <View style={styles.titlecontainer}  >
@@ -19,17 +23,10 @@ export const Home = () => {
                 <View style={styles.statecontainer}  >
                     <Text style={styles.statetext}> Hora de se Concentrar</Text>
                     <Text style={styles.statetext}> Pausa curta</Text>
-
                     <Text style={styles.statetext}> Pausa longa</Text>
-
                     <Text style={styles.statetext}> Cronômetro em pausa </Text>
-
                 </View>
-
-
                 <View style={styles.progressContainer}>
-
-
                     <AnimatedCircularProgress
                         size={160}
                         width={7}
@@ -44,9 +41,7 @@ export const Home = () => {
                         )}
                     />
                 </View>
-
             </View>
-
             <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.primeryButton}>
                     <Text style={styles.primeryButtonText}>
@@ -81,6 +76,21 @@ export const Home = () => {
 
 
             </View>
+
+            <View style={styles.pomodorosContainer}>
+
+                <Text style={styles.pomodorosText} >
+                    Pomodoros:
+
+                </Text>
+
+                < View style={styles.pomodorosIndicator} />
+                < View style={styles.pomodorosIndicator} />
+                < View style={styles.pomodorosIndicator} />
+                < View style={styles.pomodorosIndicator} />
+
+
+            </View>
         </View>
     )
 }
@@ -88,7 +98,9 @@ export const Home = () => {
 const styles = StyleSheet.create({
     container: {
         gap: 36,
-        justifyContent: 'center'
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     titlegroup: {
         gap: 24
@@ -142,6 +154,32 @@ const styles = StyleSheet.create({
         color: Theme.colors.text,
         fontSize: Theme.fontSize.body,
         fontFamily: Theme.fonts.interRegular
+    },
+
+    pomodorosContainer: {
+        justifyContent: 'center',
+        flexDirection: 'row',
+        gap: 8,
+        alignItems: 'center'
+    },
+    pomodorosText: {
+        color: Theme.colors.text,
+        fontSize: Theme.fontSize.body,
+        fontFamily: Theme.fonts.interRegular
+    },
+    pomodorosIndicator: {
+        width: 20,
+        height: 20,
+        borderRadius: '100%',
+        backgroundColor: Theme.colors.divider
+
+    },
+    pomodorosIndicatorComplete: {
+        width: 20,
+        height: 20,
+        borderRadius: '100%',
+        backgroundColor: Theme.colors.primary
+
     }
 
 })

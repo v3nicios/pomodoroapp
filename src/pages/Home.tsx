@@ -11,10 +11,10 @@ export const Home = () => {
     const [isRunning, setisRunning] = useState(false);
     const [isPaused, setisPaused] = useState(false);
     const [currentStatus, setcurrentStatus] = useState<'focus' | 'short-breack' | 'long-breake'>('focus');
-    const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+    const [step, setStep] = useState< 1 | 2 | 3 | 4>(1);
     const [currentShortBreackcicleTime] = useState(5 * 60);
     const [currentLongBreakecicleTime] = useState(15 * 60);
-    const [currentFocuscicleTime] = useState(1 * 60);
+    const [currentFocuscicleTime] = useState(25 * 60);
     const [countercicleTime, setcountercicleTime] = useState(25 * 60);
 
 
@@ -22,7 +22,7 @@ export const Home = () => {
         if (!isRunning || isPaused) return;
 
         const ref = setInterval(() => {
-            setcountercicleTime(old => old <= 0 ? old : old - 1)
+            setcountercicleTime(old => old <= 0 ? old : old - 100)
         }, 1000);
         return () => clearInterval(ref)
     }, [isRunning, isPaused])
@@ -31,7 +31,9 @@ export const Home = () => {
         switch (currentStatus) {
 
             case "focus": {
+
                 if (countercicleTime > 0) break;
+
                 if (step < 4) {
                     setcurrentStatus('short-breack');
                     setStep(old => (old + 1) as 1);
@@ -48,7 +50,6 @@ export const Home = () => {
                 {
                     if (countercicleTime <= 0) {
                         setcurrentStatus('focus');
-                        setStep(old => (old + 1) as 1);
                         setcountercicleTime(currentFocuscicleTime)
                     }
                 }
@@ -80,7 +81,7 @@ export const Home = () => {
             case 'focus' : return 100 - (countercicleTime / currentFocuscicleTime * 100)
             case 'short-breack' : return 100 - (countercicleTime / currentShortBreackcicleTime * 100)
             case 'long-breake' : return 100 - (countercicleTime / currentLongBreakecicleTime * 100)
-            default: break;
+            default: return 0;
         }
 
     }, [
@@ -138,7 +139,7 @@ export const Home = () => {
                         <AnimatedCircularProgress
                             size={160}
                             width={7}
-                            fill={100 - (countercicleTime / currentFocuscicleTime * 100)}
+                            fill={timeProgress}
                             rotation={0}
                             tintColor={Theme.colors.divider}
                             backgroundColor={Theme.colors.primary}
@@ -212,7 +213,7 @@ export const Home = () => {
 
                     </Text>
 
-                    < View style={step >= 1 ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />
+                    < View style={step === 1 && currentStatus === 'long-breake' ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />
                     < View style={step >= 2 ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />
                     < View style={step >= 3 ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />
                     < View style={step >= 4 ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />

@@ -4,7 +4,8 @@ import { TNavigationScreenProps } from "../AppRoutes";
 import { Theme } from '../shared/themes/Theme';
 import CircularProgress, { AnimatedCircularProgress } from 'react-native-circular-progress'
 import { MaterialIcons } from '@expo/vector-icons'
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import AsyncStorage from  '@react-native-async-storage/async-storage';
 
 export const Settings = () => {
     const navigation = useNavigation<TNavigationScreenProps>();
@@ -12,7 +13,15 @@ export const Settings = () => {
     const [focusPeriod, setFocusPeriod] = useState(25);
     const [shortBreakPeriod, setshortBreakPeriod] = useState(5);
     const [longBreakPeriod, setlongBreakPeriod] = useState(15);
-    const [notificationPeriod, setnotificationPeriod] = useState(true);
+    const [notificationActivated, setnotificationActivated] = useState(true);
+
+    useEffect(
+        () => {
+      
+        }, []
+    )
+
+
 
     return (
         <View style={styles.mainContainer} >
@@ -148,12 +157,12 @@ export const Settings = () => {
                     <View style={styles.formFiledButtons}>
 
 
-                        <TouchableOpacity style={notificationPeriod === false ? styles.primeryButton : styles.SecundaryButton}
-                            onPress={() => setnotificationPeriod(false)}>
+                        <TouchableOpacity style={notificationActivated === false ? styles.primeryButton : styles.SecundaryButton}
+                            onPress={() => setnotificationActivated(false)}>
                             <Text style={styles.primeryButtonText}>desativado</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={notificationPeriod === true ? styles.primeryButton : styles.SecundaryButton}
-                            onPress={() => setnotificationPeriod(true)}>
+                        <TouchableOpacity style={notificationActivated === true ? styles.primeryButton : styles.SecundaryButton}
+                            onPress={() => setnotificationActivated(true)}>
                             <Text style={styles.primeryButtonText}>Ativado</Text>
                         </TouchableOpacity>
 

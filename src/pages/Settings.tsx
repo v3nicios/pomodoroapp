@@ -10,7 +10,7 @@ export const Settings = () => {
     const navigation = useNavigation<TNavigationScreenProps>();
 
     const [focusPeriod, setFocusPeriod] = useState(25);
-    const [shortBreakPeriod, setshortBreakPeriod] = useState(7);
+    const [shortBreakPeriod, setshortBreakPeriod] = useState(5);
     const [longBreakPeriod, setlongBreakPeriod] = useState(15);
     const [notificationPeriod, setnotificationPeriod] = useState(true);
 

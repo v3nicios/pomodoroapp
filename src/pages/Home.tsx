@@ -22,7 +22,7 @@ export const Home = () => {
         if (!isRunning || isPaused) return;
 
         const ref = setInterval(() => {
-            setcountercicleTime(old => old <= 0 ? old : old - 100)
+            setcountercicleTime(old => old <= 0 ? old : old - 1)
         }, 1000);
         return () => clearInterval(ref)
     }, [isRunning, isPaused])

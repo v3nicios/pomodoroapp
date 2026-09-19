@@ -5,20 +5,55 @@ import { Theme } from '../shared/themes/Theme';
 import CircularProgress, { AnimatedCircularProgress } from 'react-native-circular-progress'
 import { MaterialIcons } from '@expo/vector-icons'
 import { useEffect, useState } from "react";
-import AsyncStorage from  '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const Settings = () => {
     const navigation = useNavigation<TNavigationScreenProps>();
-
+    const [loaded, setLoaded] = useState(false)
     const [focusPeriod, setFocusPeriod] = useState(25);
     const [shortBreakPeriod, setshortBreakPeriod] = useState(5);
     const [longBreakPeriod, setlongBreakPeriod] = useState(15);
     const [notificationActivated, setnotificationActivated] = useState(true);
 
+    useEffect(() => {
+        Promise.all([
+            AsyncStorage.getItem('NOTIFICATION_ACTIVATED'),
+            AsyncStorage.getItem('SHORT_BREAK'),
+            AsyncStorage.getItem('LONG_BREAK'),
+            AsyncStorage.getItem('FOCUS_PERIOD')
+        ]).then(([notification, short, long, focus ])=>{
+            setnotificationActivated(JSON.parse(notification || 'true'))
+            setshortBreakPeriod(JSON.parse(short || '5'))
+            setlongBreakPeriod(JSON.parse(long || '15'))
+            setFocusPeriod(JSON.parse(focus || '25'))
+
+        } ).finally(() => setLoaded(true))
+    }, []);
+
+
     useEffect(
         () => {
-      
-        }, []
+            if(!loaded) return;            
+            AsyncStorage.setItem('NOTIFICATION_ACTIVATED', JSON.stringify(notificationActivated));
+        }, [notificationActivated]
+    )
+    useEffect(
+        () => {
+            if(!loaded) return;
+            AsyncStorage.setItem('SHORT_BREAK', JSON.stringify(shortBreakPeriod));
+        }, [shortBreakPeriod]
+    )
+    useEffect(
+        () => {
+            if(!loaded) return;
+            AsyncStorage.setItem('LONG_BREAK', JSON.stringify(longBreakPeriod));
+        }, [longBreakPeriod]
+    )
+    useEffect(
+        () => {
+            if(!loaded) return;
+            AsyncStorage.setItem('FOCUS_PERIOD', JSON.stringify(focusPeriod));
+        }, [focusPeriod]
     )
 
 

@@ -1,22 +1,51 @@
-import { useNavigation } from "@react-navigation/native"
+import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import { StyleSheet, Text, Touchable, TouchableOpacity, View } from "react-native"
 import { TNavigationScreenProps } from "../AppRoutes";
 import { Theme } from '../shared/themes/Theme';
 import CircularProgress, { AnimatedCircularProgress } from 'react-native-circular-progress'
 import { MaterialIcons } from '@expo/vector-icons'
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { updateStateByElapsedTime } from "../shared/helpers/UpdateStatebElapsedTime";
 
 export const Home = () => {
     const navigation = useNavigation<TNavigationScreenProps>();
     const [isRunning, setisRunning] = useState(false);
     const [isPaused, setisPaused] = useState(false);
     const [currentStatus, setcurrentStatus] = useState<'focus' | 'short-breack' | 'long-breake'>('focus');
-    const [step, setStep] = useState< 1 | 2 | 3 | 4>(1);
-    const [currentShortBreackcicleTime] = useState(5 * 60);
-    const [currentLongBreakecicleTime] = useState(15 * 60);
-    const [currentFocuscicleTime] = useState(25 * 60);
+    const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+    const [currentShortBreackcicleTime, setcurrentShortBreackcicleTime] = useState(5 * 60);
+    const [currentLongBreakecicleTime, setcurrentLongBreackcicleTime] = useState(15 * 60);
+    const [currentFocuscicleTime, setFocuesCicleTime] = useState(25 * 60);
     const [countercicleTime, setcountercicleTime] = useState(25 * 60);
 
+    useFocusEffect(useCallback(() => {
+        Promise.all([
+            AsyncStorage.getItem('SHORT_BREAK'),
+            AsyncStorage.getItem('LONG_BREAK'),
+            AsyncStorage.getItem('FOCUS_PERIOD')
+        ]).then(([short, long, focus]) => {
+            setcurrentShortBreackcicleTime(JSON.parse(short || '5') * 60)
+            setcurrentLongBreackcicleTime(JSON.parse(long || '15') * 60)
+            setFocuesCicleTime(JSON.parse(focus || '25') * 60)
+            setcountercicleTime(JSON.parse(focus || '25') * 60)
+
+        })
+    }, [])
+    )
+    useEffect(()=> {
+            AsyncStorage.getItem('APP_STATE')
+            .then(value =>{
+                const APPSTATE = JSON.parse(value || 'null');
+                if (!APPSTATE) return; 
+                const updatedAppState = updateStateByElapsedTime(APPSTATE)
+                setisPaused(updatedAppState.isPaused);
+                setisRunning(updatedAppState.isRunning);
+                setStep(updatedAppState.step);
+                setcurrentStatus(updatedAppState.currentStatus);
+                setcountercicleTime(updatedAppState.countercicleTime);             
+                })
+    },[])
 
     useEffect(() => {
         if (!isRunning || isPaused) return;
@@ -56,7 +85,22 @@ export const Home = () => {
                 break;
             default: break;
         }
-    }, [countercicleTime, currentStatus, step, currentShortBreackcicleTime, currentFocuscicleTime, currentLongBreakecicleTime]
+        const appStateToSave = {
+            time: Date.now(),
+            isPaused,
+            isRunning,
+            currentStatus,
+            step,
+            countercicleTime,
+            currentShortBreackcicleTime,
+currentFocuscicleTime,
+        }
+        
+        AsyncStorage.setItem('APP_STATE', JSON.stringify({
+          appStateToSave
+        }))
+    }, [countercicleTime, currentStatus, step, currentShortBreackcicleTime, currentFocuscicleTime, currentLongBreakecicleTime,isPaused,
+            isRunning]
     )
 
     const handleStart = () => {
@@ -67,6 +111,7 @@ export const Home = () => {
     }
     const handleStop = () => {
         setisPaused(false);
+        setcurrentStatus('focus');
         setStep(1);
         setisRunning(false);
         setcountercicleTime(currentFocuscicleTime);
@@ -75,19 +120,19 @@ export const Home = () => {
         setisPaused(false);
     }
 
-    const timeProgress = useMemo( () => {
+    const timeProgress = useMemo(() => {
 
-        switch (currentStatus){
-            case 'focus' : return 100 - (countercicleTime / currentFocuscicleTime * 100)
-            case 'short-breack' : return 100 - (countercicleTime / currentShortBreackcicleTime * 100)
-            case 'long-breake' : return 100 - (countercicleTime / currentLongBreakecicleTime * 100)
+        switch (currentStatus) {
+            case 'focus': return 100 - (countercicleTime / currentFocuscicleTime * 100)
+            case 'short-breack': return 100 - (countercicleTime / currentShortBreackcicleTime * 100)
+            case 'long-breake': return 100 - (countercicleTime / currentLongBreakecicleTime * 100)
             default: return 0;
         }
 
     }, [
-            currentStatus,countercicleTime,
-            currentLongBreakecicleTime,
-            currentShortBreackcicleTime, currentFocuscicleTime    ] );
+        currentStatus, countercicleTime,
+        currentLongBreakecicleTime,
+        currentShortBreackcicleTime, currentFocuscicleTime]);
 
     return (
         <View style={styles.mainContainer} >
@@ -127,11 +172,11 @@ export const Home = () => {
                         )}
 
                         {!isPaused && currentStatus === 'short-breack' &&
-                        (<Text style={styles.statetext}> Pausa curta</Text>
-                        )}
+                            (<Text style={styles.statetext}> Pausa curta</Text>
+                            )}
 
                         {!isPaused && currentStatus === 'long-breake' &&
-                        (<Text style={styles.statetext}> Pausa longa</Text>)}
+                            (<Text style={styles.statetext}> Pausa longa</Text>)}
 
 
                     </View>
@@ -169,9 +214,8 @@ export const Home = () => {
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity style={styles.primeryButton}>
                             <Text style={styles.primeryButtonText}
-                                onPress={handlePause}
-                            >
-                                Pausar</Text>
+                                onPress={handlePause}>
+                                Pausar </Text>
                         </TouchableOpacity>
 
 
@@ -213,10 +257,10 @@ export const Home = () => {
 
                     </Text>
 
-                    < View style={step === 1 && currentStatus === 'long-breake' ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />
-                    < View style={step >= 2 ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />
-                    < View style={step >= 3 ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />
-                    < View style={step >= 4 ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />
+                    < View style={step >= 2 || currentStatus === 'long-breake' ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />
+                    < View style={step >= 3 || currentStatus === 'long-breake' ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />
+                    < View style={step >= 4 || currentStatus === 'long-breake' ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />
+                    < View style={currentStatus === 'long-breake' ? styles.pomodorosIndicatorComplete : styles.pomodorosIndicator} />
 
 
                 </View>

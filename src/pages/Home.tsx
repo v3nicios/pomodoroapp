@@ -19,6 +19,7 @@ export const Home = () => {
     const [currentFocuscicleTime, setFocuesCicleTime] = useState(25 * 60);
     const [countercicleTime, setcountercicleTime] = useState(25 * 60);
 
+
     useFocusEffect(useCallback(() => {
         Promise.all([
             AsyncStorage.getItem('SHORT_BREAK'),
@@ -33,18 +34,20 @@ export const Home = () => {
         })
     }, [])
     )
+
     useEffect(()=> {
             AsyncStorage.getItem('APP_STATE')
             .then(value =>{
-                const APPSTATE = JSON.parse(value || 'null');
-                if (!APPSTATE) return; 
-                const updatedAppState = updateStateByElapsedTime(APPSTATE)
+                const appState = JSON.parse(value || 'null');
+                if (!appState) return; 
+
+                const updatedAppState = updateStateByElapsedTime(appState)
                 setisPaused(updatedAppState.isPaused);
                 setisRunning(updatedAppState.isRunning);
                 setStep(updatedAppState.step);
                 setcurrentStatus(updatedAppState.currentStatus);
-                setcountercicleTime(updatedAppState.countercicleTime);             
-                })
+                setcountercicleTime(updatedAppState.countercicleTime);       
+            })
     },[])
 
     useEffect(() => {
@@ -71,9 +74,7 @@ export const Home = () => {
                     setcurrentStatus('long-breake');
                     setStep(1);
                     setcountercicleTime(currentLongBreakecicleTime)
-                }
-                break
-            };
+                }break };
             case "short-breack":
             case "long-breake":
                 {
@@ -81,10 +82,12 @@ export const Home = () => {
                         setcurrentStatus('focus');
                         setcountercicleTime(currentFocuscicleTime)
                     }
-                }
-                break;
+
+                    break;
+                } 
             default: break;
         }
+
         const appStateToSave = {
             time: Date.now(),
             isPaused,
@@ -92,19 +95,21 @@ export const Home = () => {
             currentStatus,
             step,
             countercicleTime,
+            currentFocuscicleTime,
             currentShortBreackcicleTime,
-currentFocuscicleTime,
-        }
+            currentLongBreakecicleTime
+        };
         
-        AsyncStorage.setItem('APP_STATE', JSON.stringify({
-          appStateToSave
-        }))
+    AsyncStorage.setItem('APP_STATE', JSON.stringify(appStateToSave))
     }, [countercicleTime, currentStatus, step, currentShortBreackcicleTime, currentFocuscicleTime, currentLongBreakecicleTime,isPaused,
             isRunning]
     )
 
     const handleStart = () => {
         setisRunning(true);
+        setcurrentStatus('focus');
+
+
     }
     const handlePause = () => {
         setisPaused(true);

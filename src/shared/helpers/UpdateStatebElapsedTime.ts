@@ -1,7 +1,6 @@
 
 interface IAppState {
-
-    step: 2 | 1 | 3 | 4;
+    step: 1 | 2 | 3 | 4;
     currentStatus: "focus" | "short-breack" | "long-breake";
     isPaused: boolean;
     isRunning: boolean;
@@ -10,16 +9,17 @@ interface IAppState {
     currentShortBreackcicleTime: number;
     currentLongBreakecicleTime: number;
     currentFocuscicleTime: number;
-
-
 }
 
 export const updateStateByElapsedTime = (appState: IAppState): IAppState => {
 
-  if (!appState.isRunning || appState.isPaused) return appState;
+  if (!appState.isRunning || appState.isPaused) {
+    return appState;
+  }
 
   const now = Date.now();
   const elapsedSeconds = Math.floor((now - (appState.time ?? now)) / 1000);
+
   if (elapsedSeconds <= 0) return appState;
 
 
@@ -29,6 +29,7 @@ export const updateStateByElapsedTime = (appState: IAppState): IAppState => {
   let step = appState.step;
 
   const advanceCycle = () => {
+    
     if (currentStatus === 'focus') {
       if (step < 4) {
         step = (step + 1) as 1 | 2 | 3 | 4;
@@ -52,11 +53,8 @@ export const updateStateByElapsedTime = (appState: IAppState): IAppState => {
   while (timeLeft <= 0) {
     const overflow = Math.abs(timeLeft);
     const nextTime = advanceCycle();
-
     timeLeft = nextTime - overflow;
   }
-
-
   return {
     ...appState,
     step,

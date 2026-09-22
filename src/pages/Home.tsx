@@ -1,15 +1,25 @@
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
-import { StyleSheet, Text, Touchable, TouchableOpacity, View } from "react-native"
+import { StyleSheet, Text, Touchable, TouchableOpacity, View, AppState } from "react-native"
 import { TNavigationScreenProps } from "../AppRoutes";
 import { Theme } from '../shared/themes/Theme';
 import CircularProgress, { AnimatedCircularProgress } from 'react-native-circular-progress'
 import { MaterialIcons } from '@expo/vector-icons'
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { updateStateByElapsedTime } from "../shared/helpers/UpdateStatebElapsedTime";
 
 export const Home = () => {
     const navigation = useNavigation<TNavigationScreenProps>();
+
+    const [appRunnigState, setappRunnigState] = useState(AppState.currentState);
+
+    useEffect(() => {
+        const listenr = AppState.addEventListener('change', setappRunnigState);
+        return () => listenr.remove();
+    },[]
+)
+ 
+
     const [isRunning, setisRunning] = useState(false);
     const [isPaused, setisPaused] = useState(false);
     const [currentStatus, setcurrentStatus] = useState<'focus' | 'short-breack' | 'long-breake'>('focus');
@@ -29,26 +39,12 @@ export const Home = () => {
             setcurrentShortBreackcicleTime(JSON.parse(short || '5') * 60)
             setcurrentLongBreackcicleTime(JSON.parse(long || '15') * 60)
             setFocuesCicleTime(JSON.parse(focus || '25') * 60)
-            setcountercicleTime(JSON.parse(focus || '25') * 60)
 
         })
     }, [])
     )
 
-    useEffect(()=> {
-            AsyncStorage.getItem('APP_STATE')
-            .then(value =>{
-                const appState = JSON.parse(value || 'null');
-                if (!appState) return; 
 
-                const updatedAppState = updateStateByElapsedTime(appState)
-                setisPaused(updatedAppState.isPaused);
-                setisRunning(updatedAppState.isRunning);
-                setStep(updatedAppState.step);
-                setcurrentStatus(updatedAppState.currentStatus);
-                setcountercicleTime(updatedAppState.countercicleTime);       
-            })
-    },[])
 
     useEffect(() => {
         if (!isRunning || isPaused) return;
@@ -74,7 +70,8 @@ export const Home = () => {
                     setcurrentStatus('long-breake');
                     setStep(1);
                     setcountercicleTime(currentLongBreakecicleTime)
-                }break };
+                } break
+            };
             case "short-breack":
             case "long-breake":
                 {
@@ -84,13 +81,40 @@ export const Home = () => {
                     }
 
                     break;
-                } 
+                }
             default: break;
         }
 
-        const appStateToSave = {
+
+
+
+    }, [countercicleTime, currentStatus, step, currentShortBreackcicleTime, currentFocuscicleTime, currentLongBreakecicleTime, isPaused,
+        isRunning]
+    )
+
+    const handleStart = () => {
+        setisRunning(true);
+
+        AsyncStorage.setItem('APP_STATE', JSON.stringify({
             time: Date.now(),
             isPaused,
+            isRunning: true,
+            currentStatus,
+            step,
+            countercicleTime,
+            currentFocuscicleTime,
+            currentShortBreackcicleTime,
+            currentLongBreakecicleTime
+        }))
+
+
+    }
+    const handlePause = () => {
+        setisPaused(true);
+
+        AsyncStorage.setItem('APP_STATE', JSON.stringify({
+            time: Date.now(),
+            isPaused: true,
             isRunning,
             currentStatus,
             step,
@@ -98,32 +122,65 @@ export const Home = () => {
             currentFocuscicleTime,
             currentShortBreackcicleTime,
             currentLongBreakecicleTime
-        };
-        
-    AsyncStorage.setItem('APP_STATE', JSON.stringify(appStateToSave))
-    }, [countercicleTime, currentStatus, step, currentShortBreackcicleTime, currentFocuscicleTime, currentLongBreakecicleTime,isPaused,
-            isRunning]
-    )
-
-    const handleStart = () => {
-        setisRunning(true);
-        setcurrentStatus('focus');
-
-
-    }
-    const handlePause = () => {
-        setisPaused(true);
+        }))
     }
     const handleStop = () => {
         setisPaused(false);
+        setisRunning(false);
         setcurrentStatus('focus');
         setStep(1);
-        setisRunning(false);
         setcountercicleTime(currentFocuscicleTime);
+        AsyncStorage.setItem('APP_STATE', JSON.stringify({
+            time: Date.now(),
+            isPaused: false,
+            isRunning: false,
+            currentStatus:'focus',
+            step: 1,
+            countercicleTime:currentFocuscicleTime ,
+            currentFocuscicleTime,
+            currentShortBreackcicleTime,
+            currentLongBreakecicleTime
+        }))
     }
     const handleContinuar = () => {
         setisPaused(false);
+        AsyncStorage.setItem('APP_STATE', JSON.stringify({
+            time: Date.now(),
+            isPaused: false,
+            isRunning,
+            currentStatus,
+            step,
+            countercicleTime,
+            currentFocuscicleTime,
+            currentShortBreackcicleTime,
+            currentLongBreakecicleTime
+        }))
     }
+    const isShouldUpdate = useRef(true);
+    useEffect(() => {
+        if (isShouldUpdate.current){
+            isShouldUpdate.current = false;
+
+            AsyncStorage.getItem('APP_STATE')
+            .then(value => {
+                const appState = JSON.parse(value || 'null');
+                if (!appState) return;
+
+                const updatedAppState = updateStateByElapsedTime(appState)
+                setisPaused(updatedAppState.isPaused);
+                setisRunning(updatedAppState.isRunning);
+                setStep(updatedAppState.step);
+                setcurrentStatus(updatedAppState.currentStatus);
+                setcountercicleTime(updatedAppState.countercicleTime);
+            })
+        if (appRunnigState === 'background'){
+            isShouldUpdate.current = true;
+        }
+
+
+        }
+    
+    },[appRunnigState])
 
     const timeProgress = useMemo(() => {
 
@@ -142,7 +199,9 @@ export const Home = () => {
     return (
         <View style={styles.mainContainer} >
             <TouchableOpacity
-                style={styles.settingButto}
+            disabled={isRunning}
+
+                style={{...styles.settingButto, opacity: isRunning ? 0 : 1}}
                 onPress={() => navigation.navigate('Settings')
                 }
             >

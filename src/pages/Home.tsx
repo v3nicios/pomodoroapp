@@ -7,11 +7,13 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { updateStateByElapsedTime } from "../shared/helpers/UpdateStatebElapsedTime";
-
+import { NotificationService } from "../shared/services/NotificationService";
+ 
 export const Home = () => {
     const navigation = useNavigation<TNavigationScreenProps>();
 
     const [appRunnigState, setappRunnigState] = useState(AppState.currentState);
+
 
     useEffect(() => {
         const listenr = AppState.addEventListener('change', setappRunnigState);
@@ -92,7 +94,7 @@ export const Home = () => {
         isRunning]
     )
 
-    const handleStart = () => {
+    const handleStart = async () => {
         setisRunning(true);
 
         AsyncStorage.setItem('APP_STATE', JSON.stringify({
@@ -106,6 +108,10 @@ export const Home = () => {
             currentShortBreackcicleTime,
             currentLongBreakecicleTime
         }))
+
+        
+
+        
 
 
     }
@@ -181,6 +187,20 @@ export const Home = () => {
         }
     
     },[appRunnigState])
+
+    useEffect(()=>{
+        NotificationService.requestPermission();
+
+        if (appRunnigState !== 'active' && isRunning && !isPaused){
+            NotificationService.activateNottification();
+        }else{
+            NotificationService.desactivateNottification();
+        }
+
+
+    }, [appRunnigState, isRunning, isPaused])
+
+
 
     const timeProgress = useMemo(() => {
 

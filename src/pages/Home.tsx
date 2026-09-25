@@ -30,17 +30,22 @@ export const Home = () => {
     const [currentLongBreakecicleTime, setcurrentLongBreackcicleTime] = useState(15 * 60);
     const [currentFocuscicleTime, setFocuesCicleTime] = useState(25 * 60);
     const [countercicleTime, setcountercicleTime] = useState(25 * 60);
+    const [NorificationActivated,setNorificationActivated] = useState(false)
 
 
     useFocusEffect(useCallback(() => {
         Promise.all([
             AsyncStorage.getItem('SHORT_BREAK'),
             AsyncStorage.getItem('LONG_BREAK'),
-            AsyncStorage.getItem('FOCUS_PERIOD')
-        ]).then(([short, long, focus]) => {
+            AsyncStorage.getItem('FOCUS_PERIOD'),
+            AsyncStorage.getItem('NOTIFICATION_ACTIVATED'),
+
+        ]).then(([short, long, focus, notificationActivated]) => {
             setcurrentShortBreackcicleTime(JSON.parse(short || '5') * 60)
             setcurrentLongBreackcicleTime(JSON.parse(long || '15') * 60)
-            setFocuesCicleTime(JSON.parse(focus || '25') * 60)
+            setFocuesCicleTime(JSON.parse(focus || '25') * 60);
+            setNorificationActivated(JSON.parse(notificationActivated || 'false'));
+
 
         })
     }, [])
@@ -189,8 +194,10 @@ export const Home = () => {
     },[appRunnigState])
 
     useEffect(()=>{
-        NotificationService.requestPermission();
-
+        if (!NorificationActivated){
+            NotificationService.desactivateNottification();
+            return;
+        }
         if (appRunnigState !== 'active' && isRunning && !isPaused){
             NotificationService.activateNottification();
         }else{
@@ -198,8 +205,13 @@ export const Home = () => {
         }
 
 
-    }, [appRunnigState, isRunning, isPaused])
+    }, [appRunnigState, isRunning, isPaused, NorificationActivated])
 
+    useEffect (()=>{
+
+                NotificationService.requestPermission();
+
+    },[])
 
 
     const timeProgress = useMemo(() => {

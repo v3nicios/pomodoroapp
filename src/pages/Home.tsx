@@ -9,7 +9,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { updateStateByElapsedTime } from "../shared/helpers/UpdateStatebElapsedTime";
 import { NotificationService } from "../shared/services/NotificationService";
  
+
 export const Home = () => {
+    
     const navigation = useNavigation<TNavigationScreenProps>();
 
     const [appRunnigState, setappRunnigState] = useState(AppState.currentState);
@@ -198,7 +200,7 @@ export const Home = () => {
             NotificationService.desactivateNottification();
             return;
         }
-        if (appRunnigState !== 'active' && isRunning && !isPaused){
+        if (appRunnigState !== 'active' && isRunning && !isPaused) {
             NotificationService.activateNottification();
         }else{
             NotificationService.desactivateNottification();
@@ -208,9 +210,7 @@ export const Home = () => {
     }, [appRunnigState, isRunning, isPaused, NorificationActivated])
 
     useEffect (()=>{
-
                 NotificationService.requestPermission();
-
     },[])
 
 

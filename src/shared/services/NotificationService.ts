@@ -4,22 +4,22 @@ import { Alert } from "react-native";
 import { updateStateByElapsedTime } from "../helpers/UpdateStatebElapsedTime";
 
 
-notifee.onBackgroundEvent( async (event) => {
+notifee.onBackgroundEvent(async (event) => {
     console.log('BACKGROUND', event);
 
     if (event.type !== EventType.DISMISSED && event.type !== EventType.DELIVERED) return;
 
-    await new Promise((resolve) => setTimeout(()=> resolve({}), 1000) )
+    await new Promise((resolve) => setTimeout(() => resolve({}), 1000))
 
     const appState = await AsyncStorage
-    .getItem('APP_STATE')
-    .then(value => JSON.parse(value || 'null'));
+        .getItem('APP_STATE')
+        .then(value => JSON.parse(value || 'null'));
     if (!appState) return;
 
     const updatedAppState = updateStateByElapsedTime(appState)
-    
+
     const getMaxTime = () => {
-        switch(updatedAppState.currentStatus){
+        switch (updatedAppState.currentStatus) {
             case 'focus': return updatedAppState.currentFocuscicleTime;
             case 'short-breack': return updatedAppState.currentShortBreackcicleTime;
             case 'long-breake': return updatedAppState.currentLongBreakecicleTime;
@@ -29,31 +29,31 @@ notifee.onBackgroundEvent( async (event) => {
     }
 
     const getTitle = () => {
-        switch(updatedAppState.currentStatus){
+        switch (updatedAppState.currentStatus) {
             case 'focus': return 'Hora de se concentrar';
             case 'short-breack': return 'Pausa curta';
             case 'long-breake': return 'Pausa longa';
 
-            default: return 'Iniciando notificações' ;
+            default: return 'Iniciando notificações';
         }
     }
 
-    const MaxTime = getMaxTime(); 
+    const MaxTime = getMaxTime();
 
-        await notifee.displayNotification({
-            id: 'pomodoro_progress',
-            title: getTitle(),
-            body: `Tempo restante ${Math.floor(updatedAppState.countercicleTime/60)}: ${(updatedAppState.countercicleTime % 60).toString().padStart(2, '0')}`,
+    await notifee.displayNotification({
+        id: 'pomodoro_progress',
+        title: getTitle(),
+        body: `Tempo restante ${Math.floor(updatedAppState.countercicleTime / 60)}: ${(updatedAppState.countercicleTime % 60).toString().padStart(2, '0')}`,
 
-            android: {
-                ongoing:true,
-                channelId: 'default',
-                progress: {
-                    max: MaxTime,
-                    current:MaxTime - updatedAppState.countercicleTime
-                }
+        android: {
+            ongoing: true,
+            channelId: 'default',
+            progress: {
+                max: MaxTime,
+                current: MaxTime - updatedAppState.countercicleTime
             }
-        });
+        }
+    });
 
 })
 
@@ -87,8 +87,8 @@ const activateNottification = async () => {
             body: 'Iniciando notificações',
 
             android: {
-                ongoing:true,
-                timeoutAfter:1000,
+                ongoing: true,
+                timeoutAfter: 1000,
                 channelId: 'default',
                 progress: {
                     max: 1,
@@ -98,8 +98,6 @@ const activateNottification = async () => {
             }
         });
 }
-
-
 
 
 export const NotificationService = {
